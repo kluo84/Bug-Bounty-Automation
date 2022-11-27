@@ -38,6 +38,6 @@ cd Bug-Bounty-Automation
 
 sed 's/\/root/\~\/Documents/' 0xelkot.sh >> 0xelkot
 rm 0xelkot.sh 
-sudo ln -s ~/Tools/Bug-Bounty-Automation/0xelkot /usr/local/bin/0xelkot
+sudo ln -s ~/Tools/Bug-Bounty-Automation/0xelkot /usr/local/bin/bb-auto
 
 printf "${GREEN}SET-UP is completed!\n${NC}"
