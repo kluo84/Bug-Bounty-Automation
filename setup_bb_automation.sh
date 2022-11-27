@@ -40,4 +40,9 @@ sed 's/\/root/\~\/Documents/' 0xelkot.sh >> 0xelkot
 rm 0xelkot.sh 
 sudo ln -s ~/Tools/Bug-Bounty-Automation/0xelkot /usr/local/bin/bb-auto
 
+printf "${GREEN}Inititalizing nuclei templates via cent\n${NC}"
+cd ~/Documents/
+cent init
+cent -p cent-nuclei-templates -k
+
 printf "${GREEN}SET-UP is completed!\n${NC}"
