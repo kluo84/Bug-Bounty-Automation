@@ -12,3 +12,6 @@ Requirements: \
 [xray](https://github.com/chaitin/xray)
 
 ## Install these tools and edit paths with your hunting folder 
+Inspiration of :
+https://github.com/CalfCrusher/RobinHood
+https://github.com/0xElkot/Bug-Bounty-Automation
