@@ -8,8 +8,13 @@ printf "${GREEN}Install go\n${NC}"
 sudo apt install golang-go -y
 
 printf "${GREEN} Add /go/bin to PATH\n${NC}"
-echo 'export PATH=$PATH:~/go/bin' >> ~/.zshrc
 
+if grep -Fxq "export PATH=$PATH:~/go/bin" ~/.zshrc
+then
+	printf("${RED}/go/bin already exist in zshrc file ${NC}")
+else
+	echo 'export PATH=$PATH:~/go/bin' >> ~/.zshrc
+fi
 source ~/.zshrc
 
 printf "${GREEN}Update go\n${NC}"
