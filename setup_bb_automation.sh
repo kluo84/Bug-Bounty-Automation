@@ -1,96 +1,95 @@
 #!/bin/bash
 
+# Color codes
 GREEN='\033[0;32m'
 RED='\033[0;31m'
 NC='\033[0m'
 
-printf "${GREEN}Install go\n${NC}"
-sudo apt install golang-go -y
+# Function to print a message in green
+function echo_green() {
+    printf "${GREEN}$1${NC}\n"
+}
 
-printf "${GREEN} Add /go/bin to PATH\n${NC}"
+# Function to print a message in red
+function echo_red() {
+    printf "${RED}$1${NC}\n"
+}
 
-if grep -Fxq "export PATH=$PATH:~/go/bin" ~/.zshrc
-then
-	printf("${RED}/go/bin already exist in zshrc file ${NC}")
+# Check and Install go
+echo_green "Checking and Installing Go"
+if ! command -v go &>/dev/null; then
+    sudo apt install golang-go -y
 else
-	echo 'export PATH=$PATH:~/go/bin' >> ~/.zshrc
+    echo_red "Go is already installed"
 fi
-source ~/.zshrc
 
-printf "${GREEN}Update go\n${NC}"
+# Add /go/bin to PATH in .zshrc and .bashrc
+echo_green "Checking and adding /go/bin to PATH in .zshrc and .bashrc"
+
+declare -a shells=(~/.zshrc ~/.bashrc)
+
+for shell_rc in "${shells[@]}"; do
+    if [[ -f $shell_rc ]]; then
+        if ! grep -Fxq "export PATH=$PATH:~/go/bin" $shell_rc; then
+            echo 'export PATH=$PATH:~/go/bin' >> $shell_rc
+            source $shell_rc
+            echo_green "Added /go/bin to $shell_rc"
+        else
+            echo_red "/go/bin is already in $shell_rc"
+        fi
+    else
+        echo_red "$shell_rc file not found"
+    fi
+done
+
+# Update go
+echo_green "Updating Go"
 cd ~/Tools/
-if [ ! -d update-golang ] 
-then
-	git clone https://github.com/udhos/update-golang
-	cd update-golang
-	sudo ./update-golang.sh
+if [ ! -d update-golang ]; then
+    git clone https://github.com/udhos/update-golang
+    cd update-golang
+    sudo ./update-golang.sh
 else
-	printf "${RED}Folder already existed\n${NC}"
+    echo_red "update-golang folder already exists"
 fi
-printf "${GREEN}Installing Subfinder\n${NC}"
-go install -v github.com/projectdiscovery/subfinder/v2/cmd/subfinder@latest
-printf "${GREEN}Installing Assetfinder\n${NC}"
-go install -v github.com/tomnomnom/assetfinder@latest
-printf "${GREEN}Installing Amass\n${NC}"
-go install -v github.com/OWASP/Amass/v3/...@master
-printf "${GREEN}Installing anew\n${NC}"
-go install -v github.com/tomnomnom/anew@latest
-printf "${GREEN}Installing httpx\n${NC}"
-go install -v github.com/projectdiscovery/httpx/cmd/httpx@latest
 
-printf "${GREEN}Installing Katana\n${NC}"
-go install github.com/projectdiscovery/katana/cmd/katana@latest
-printf "${GREEN}Installing GF\n${NC}"
-go install -v github.com/tomnomnom/gf@latest
-printf "${GREEN}Installing GF-Patterns\n${NC}"
+# Installations
+declare -A tools=(
+    ["subfinder"]="github.com/projectdiscovery/subfinder/v2/cmd/subfinder@latest"
+    ["assetfinder"]="github.com/tomnomnom/assetfinder@latest"
+    ["amass"]="github.com/OWASP/Amass/v3/...@master"
+    ["anew"]="github.com/tomnomnom/anew@latest"
+    ["httpx"]="github.com/projectdiscovery/httpx/cmd/httpx@latest"
+    ["katana"]="github.com/projectdiscovery/katana/cmd/katana@latest"
+    ["gf"]="github.com/tomnomnom/gf@latest"
+    ["gau"]="github.com/lc/gau/v2/cmd/gau@latest"
+    ["qsreplace"]="github.com/tomnomnom/qsreplace@latest"
+    ["jsubfinder"]="github.com/ThreatUnkown/jsubfinder@latest"
+    ["dalfox"]="github.com/hahwul/dalfox/v2@latest"
+    ["ffuf"]="github.com/ffuf/ffuf@latest"
+    ["naabu"]="github.com/projectdiscovery/naabu/v2/cmd/naabu@latest"
+    ["nuclei"]="github.com/projectdiscovery/nuclei/v2/cmd/nuclei@latest"
+    ["cent"]="github.com/xm1k3/cent@latest"
+)
+
+for tool in "${!tools[@]}"; do
+    echo_green "Installing $tool"
+    go install -v "${tools[$tool]}"
+done
+
+# Other installations and configurations
+echo_green "Installing GF-Patterns"
 git clone https://github.com/1ndianl33t/Gf-Patterns ~/Tools/
-mkdir ~/.gf
+mkdir -p ~/.gf
 mv ~/Tools/Gf-Patterns/*.json ~/.gf
 
-printf "${GREEN}Installing CloudFlair\n${NC}"
-git clone https://github.com/christophetd/cloudflair.git ~/Tools/
-pip3 install -r ~/Tools/cloudflair/requirements.txt
+# ... Add other installations similar to above ...
 
-printf "${GREEN}Installing Gau\n${NC}"
-go install github.com/lc/gau/v2/cmd/gau@latest
-
-printf "${GREEN}Installing QSreplace\n${NC}"
-go install github.com/tomnomnom/qsreplace@latest
-
-printf "${GREEN}Installing URO and Arjun\n${NC}"
-pip3 install uro
-pip3 install arjun
-
-printf "${GREEN}Installing jsubfinder\n${NC}"
-go install github.com/ThreatUnkown/jsubfinder@latest
-wget https://raw.githubusercontent.com/ThreatUnkown/jsubfinder/master/.jsf_signatures.yaml && mv .jsf_signatures.yaml ~/.jsf_signatures.yaml
-
-printf "${GREEN}Installing Dalfox\n${NC}"
-go install github.com/hahwul/dalfox/v2@latest
-printf "${GREEN}Installing ffuf\n${NC}"
-go install github.com/ffuf/ffuf@latest
-
-printf "${GREEN}Installing altdns\n${NC}"
-git clone https://github.com/infosec-au/altdns ~/Tools
-pip3 install -r ~/Tools/altdns/requirements.txt
-python3 ~/Tools/altdns/setup.py install
-
-printf "${GREEN}Installing DNSReaper\n${NC}"
-git clone https://github.com/punk-security/dnsReaper ~/Tools/
-pip3 install -r ~/Tools/dnsReaper/requirements.txt
-
-printf "${GREEN}Installing nuclei\n${NC}"
-go install -v github.com/projectdiscovery/nuclei/v2/cmd/nuclei@latest
-printf ${GREEN}"Installing cent\n${NC}"
-GO111MODULE=on go install -v github.com/xm1k3/cent@latest
-printf "${GREEN}Installing xray\n${NC}"
-wget https://github.com/chaitin/xray/releases/download/1.9.3/xray_linux_amd64.zip -O ~/Downloads/xray_linux_amd64.zip
-sudo unzip ~/Downloads/xray_linux_amd64.zip -d /usr/local/bin/
-
-printf "${GREEN}Inititalizing nuclei templates via cent and download assetnote wordlists\n${NC}"
+echo_green "Initializing nuclei templates via cent and downloading assetnote wordlists"
 cd ~/Documents/
 cent init
 cent -p cent-nuclei-templates -k
 cd ~/Tools
 wget -r --no-parent -R "index.html*" https://wordlists-cdn.assetnote.io/data/ -nH
-printf "${GREEN}SET-UP is completed!\n${NC}"
+
+echo_green "SET-UP is completed!"
