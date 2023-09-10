@@ -1,0 +1,44 @@
+---
+- name: Install Go Tools
+  hosts: localhost
+  become: yes  # Equivalent of using sudo
+  tasks:
+    - name: Install Go
+      apt:
+        name: golang-go
+        state: present
+
+    - name: Add /go/bin to PATH for zshrc and bashrc
+      lineinfile:
+        path: "{{ item }}"
+        line: 'export PATH=$PATH:~/go/bin'
+        state: present
+      with_items:
+        - ~/.zshrc
+        - ~/.bashrc
+      become_user: "{{ ansible_user }}"
+
+    - name: Update Go
+      block:
+        - name: Check if update-golang directory exists
+          stat:
+            path: ~/Tools/update-golang
+          register: update_golang_dir
+
+        - name: Clone update-golang repository
+          git:
+            repo: 'https://github.com/udhos/update-golang'
+            dest: '~/Tools/update-golang'
+          when: not update_golang_dir.stat.exists
+
+        - name: Run update-golang.sh
+          command: '~/Tools/update-golang/update-golang.sh'
+          when: not update_golang_dir.stat.exists
+
+    - name: Install Go tools
+      command: "go install -v {{ item }}"
+      with_items:
+        - github.com/projectdiscovery/subfinder/v2/cmd/subfinder@latest
+        # ... Add other tools here ...
+
+    # Add other tasks as needed ...
